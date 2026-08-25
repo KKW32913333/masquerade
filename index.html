@@ -53,10 +53,19 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible{
   transition:background .4s ease, padding .4s ease, box-shadow .4s ease;
 }
 .nav.scrolled{ background:rgba(13,9,18,0.88); backdrop-filter:blur(10px); padding:12px 32px; box-shadow:0 2px 20px rgba(0,0,0,0.4); }
+.scroll-progress{
+  position:fixed; top:0; left:0; height:2px; width:0%; z-index:101;
+  background:linear-gradient(90deg, var(--wine-light), var(--gold), var(--sapphire-light));
+  transition:width .1s linear;
+}
 .nav-logo{ font-family:var(--font-display); font-style:italic; font-weight:600; font-size:19px; letter-spacing:.06em; color:var(--gold-bright); text-decoration:none; }
 .nav-links{ display:flex; gap:30px; list-style:none; margin:0; padding:0; }
-.nav-links a{ text-decoration:none; font-size:12.5px; letter-spacing:.14em; color:var(--parchment); opacity:.75; transition:opacity .2s ease; }
+.nav-links a{ text-decoration:none; font-size:12.5px; letter-spacing:.14em; color:var(--parchment); opacity:.75; transition:opacity .2s ease, color .2s ease; position:relative; }
 .nav-links a:hover{ opacity:1; }
+.nav-links a.active{ opacity:1; color:var(--gold-bright); }
+.nav-links a.active::after{
+  content:''; position:absolute; left:0; right:0; bottom:-6px; height:1px; background:var(--gold-bright);
+}
 .nav-cta{
   font-family:var(--font-mincho); font-size:12.5px; letter-spacing:.16em;
   padding:9px 22px; border-radius:999px; border:1px solid var(--gold);
@@ -151,11 +160,59 @@ section{ position:relative; }
   width:64px; height:1px; margin:28px auto; background:linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 
+/* ==================== 漂う金の粒子（暗いセクション向け） ==================== */
+.drift-layer{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0; }
+.drift-dot{
+  position:absolute; width:3px; height:3px; border-radius:50%; background:var(--gold-bright);
+  box-shadow:0 0 6px rgba(240,215,137,0.8); opacity:0;
+  animation:driftUp linear infinite;
+}
+@keyframes driftUp{
+  0%{ opacity:0; transform:translateY(0) translateX(0); }
+  10%{ opacity:.8; }
+  90%{ opacity:.5; }
+  100%{ opacity:0; transform:translateY(-120px) translateX(var(--dx, 20px)); }
+}
+@media (prefers-reduced-motion: reduce){ .drift-dot{ animation:none; display:none; } }
+
+/* ==================== 統計バー ==================== */
+.stats-bar{
+  background:var(--parchment); padding:56px 0;
+  border-top:1px solid rgba(201,162,39,0.25); border-bottom:1px solid rgba(201,162,39,0.25);
+}
+.stats-row{
+  display:grid; grid-template-columns:repeat(4, 1fr); max-width:960px; margin:0 auto;
+}
+.stat-item{
+  text-align:center; padding:0 12px; border-right:1px solid rgba(36,26,53,0.12);
+  opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease;
+}
+.stat-item:last-child{ border-right:none; }
+.reveal.in-view .stat-item:nth-child(1){ transition-delay:0s; }
+.reveal.in-view .stat-item:nth-child(2){ transition-delay:.1s; }
+.reveal.in-view .stat-item:nth-child(3){ transition-delay:.2s; }
+.reveal.in-view .stat-item:nth-child(4){ transition-delay:.3s; }
+.reveal.in-view .stat-item{ opacity:1; transform:translateY(0); }
+.stat-num{
+  font-family:var(--font-display); font-style:italic; font-weight:600; font-size:clamp(28px,4vw,40px);
+  margin-bottom:6px;
+}
+.stat-item:nth-child(1) .stat-num{ color:var(--gold-dim); }
+.stat-item:nth-child(2) .stat-num{ color:var(--sapphire); }
+.stat-item:nth-child(3) .stat-num{ color:var(--wine); }
+.stat-item:nth-child(4) .stat-num{ color:var(--gold-dim); }
+.stat-label{ font-size:11.5px; letter-spacing:.08em; color:var(--ink-on-parchment-dim); }
+@media (max-width:700px){
+  .stats-row{ grid-template-columns:repeat(2, 1fr); row-gap:32px; }
+  .stat-item:nth-child(2){ border-right:none; }
+}
+
 /* ==================== 世界観 ==================== */
 .story{
   padding:130px 0; text-align:center;
   background:
-    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(74,25,66,0.35), transparent 65%),
+    radial-gradient(ellipse 55% 40% at 20% 10%, rgba(74,25,66,0.4), transparent 60%),
+    radial-gradient(ellipse 55% 40% at 80% 90%, rgba(44,74,124,0.28), transparent 60%),
     linear-gradient(180deg, var(--ink) 0%, var(--plum) 50%, var(--ink) 100%);
 }
 .story-body{
@@ -166,7 +223,9 @@ section{ position:relative; }
 .story-body b{ color:var(--gold-bright); font-weight:700; }
 
 /* ==================== 遊び方 ==================== */
-.howto{ padding:130px 0 140px; background:var(--ink); }
+.howto{ padding:130px 0 140px; background:var(--parchment); }
+.howto .eyebrow-label{ color:var(--gold-dim); }
+.howto .section-title{ color:var(--ink-on-parchment); }
 .howto-grid{
   display:grid; grid-template-columns:repeat(3, 1fr); gap:44px; margin-top:72px;
   max-width:980px; margin-left:auto; margin-right:auto;
@@ -174,29 +233,38 @@ section{ position:relative; }
 .howto-step{
   text-align:center; opacity:0; transform:translateY(24px);
   transition:opacity .8s ease, transform .8s ease;
+  background:#fffdf6; border:1px solid rgba(36,26,53,0.08); border-radius:18px; padding:38px 26px;
+  box-shadow:0 10px 26px rgba(36,26,53,0.06);
 }
+.howto-step:hover{ transform:translateY(-6px); box-shadow:0 18px 34px rgba(36,26,53,0.12); transition:transform .3s ease, box-shadow .3s ease; }
+.howto-step:hover .howto-num{ transform:scale(1.1) rotate(-6deg); }
 .reveal.in-view .howto-step:nth-child(1){ transition-delay:.05s; }
 .reveal.in-view .howto-step:nth-child(2){ transition-delay:.2s; }
 .reveal.in-view .howto-step:nth-child(3){ transition-delay:.35s; }
 .reveal.in-view .howto-step{ opacity:1; transform:translateY(0); }
 .howto-num{
-  font-family:var(--font-display); font-style:italic; font-weight:600; font-size:52px;
-  color:transparent; -webkit-text-stroke:1.5px var(--gold); line-height:1; margin-bottom:18px;
+  display:inline-flex; align-items:center; justify-content:center;
+  width:64px; height:64px; border-radius:50%; margin:0 auto 20px;
+  font-family:var(--font-display); font-style:italic; font-weight:600; font-size:26px; color:#fff;
+  transition:transform .35s cubic-bezier(.3,1.5,.4,1);
 }
-.howto-step h3{ font-size:17px; margin:0 0 12px; letter-spacing:.08em; color:var(--gold-bright); font-weight:700; }
-.howto-step p{ font-size:13.5px; line-height:2; color:#c9bfa8; margin:0; }
+.howto-step:nth-child(1) .howto-num{ background:linear-gradient(150deg, var(--gold), var(--gold-dim)); }
+.howto-step:nth-child(2) .howto-num{ background:linear-gradient(150deg, var(--sapphire-light), var(--sapphire)); }
+.howto-step:nth-child(3) .howto-num{ background:linear-gradient(150deg, var(--wine-light), var(--wine)); }
+.howto-step h3{ font-size:17px; margin:0 0 12px; letter-spacing:.08em; color:var(--ink-on-parchment); font-weight:700; }
+.howto-step p{ font-size:13.5px; line-height:2; color:var(--ink-on-parchment-dim); margin:0; }
 .howto-divider{ display:none; }
 .howto-rule-box{
-  max-width:640px; margin:80px auto 0; padding:32px 36px; border-radius:16px;
-  background:linear-gradient(160deg, rgba(201,162,39,0.07), rgba(201,162,39,0.02));
-  border:1px solid rgba(201,162,39,0.25); text-align:center;
+  max-width:640px; margin:64px auto 0; padding:32px 36px; border-radius:16px;
+  background:linear-gradient(160deg, rgba(74,25,66,0.06), rgba(44,74,124,0.05));
+  border:1px solid rgba(36,26,53,0.1); text-align:center;
   opacity:0; transform:translateY(20px); transition:opacity .8s ease .5s, transform .8s ease .5s;
 }
 .reveal.in-view .howto-rule-box{ opacity:1; transform:translateY(0); }
-.howto-rule-box p{ margin:0; font-size:14.5px; line-height:2.1; color:#e5dcc6; }
-.howto-rule-box b{ color:var(--gold-bright); }
+.howto-rule-box p{ margin:0; font-size:14.5px; line-height:2.1; color:var(--ink-on-parchment-dim); }
+.howto-rule-box b{ color:var(--wine); }
 @media (max-width:760px){
-  .howto-grid{ grid-template-columns:1fr; gap:56px; }
+  .howto-grid{ grid-template-columns:1fr; gap:24px; }
   .howto-rule-box{ padding:26px 22px; }
 }
 
@@ -228,9 +296,14 @@ section{ position:relative; }
   box-shadow:0 10px 26px rgba(36,26,53,0.18), 0 2px 6px rgba(36,26,53,0.12);
   opacity:0; transform:translateY(26px);
   transition:opacity .7s ease, transform .7s ease, box-shadow .3s ease;
+  will-change:transform;
 }
-.mask-tile:hover{ box-shadow:0 16px 36px rgba(36,26,53,0.28), 0 4px 10px rgba(36,26,53,0.18); }
-.reveal.in-view .mask-tile{ opacity:1; transform:translateY(0); }
+.mask-tile:hover{ box-shadow:0 20px 40px rgba(36,26,53,0.3), 0 6px 14px rgba(36,26,53,0.2); }
+.reveal.in-view .mask-tile{
+  opacity:1;
+  transform:translateY(0) perspective(700px) rotateX(var(--ry, 0deg)) rotateY(var(--rx, 0deg)) scale(var(--tilt-scale, 1));
+  transition:opacity .7s ease, transform .15s ease, box-shadow .3s ease;
+}
 .mask-tile img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
 .mask-tile:hover img{ transform:scale(1.05); }
 .mask-tile-scrim{
@@ -279,21 +352,58 @@ section{ position:relative; }
 .feature-cell{
   padding:38px 40px; background:rgba(255,255,255,0.02);
   border-right:1px solid rgba(201,162,39,0.14); border-bottom:1px solid rgba(201,162,39,0.14);
-  opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease;
+  opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease, background .3s ease;
 }
+.feature-cell:hover{ background:rgba(201,162,39,0.05); }
+.feature-cell:hover .feature-icon{ transform:scale(1.1) rotate(-4deg); }
 .reveal.in-view .feature-cell{ opacity:1; transform:translateY(0); }
 .reveal.in-view .feature-cell:nth-child(1){ transition-delay:.05s; }
 .reveal.in-view .feature-cell:nth-child(2){ transition-delay:.12s; }
 .reveal.in-view .feature-cell:nth-child(3){ transition-delay:.19s; }
 .reveal.in-view .feature-cell:nth-child(4){ transition-delay:.26s; }
 .feature-cell:nth-child(2n){ border-right:none; }
-.feature-icon{ font-size:22px; margin-bottom:16px; opacity:.9; }
+.feature-icon{
+  width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:19px; margin-bottom:18px; transition:transform .35s cubic-bezier(.3,1.5,.4,1);
+}
+.feature-cell:nth-child(1) .feature-icon{ background:linear-gradient(150deg, var(--gold), var(--gold-dim)); }
+.feature-cell:nth-child(2) .feature-icon{ background:linear-gradient(150deg, var(--sapphire-light), var(--sapphire)); }
+.feature-cell:nth-child(3) .feature-icon{ background:linear-gradient(150deg, var(--wine-light), var(--wine)); }
+.feature-cell:nth-child(4) .feature-icon{ background:linear-gradient(150deg, var(--gold-bright), var(--gold)); }
 .feature-cell h3{ font-size:16.5px; margin:0 0 10px; color:var(--gold-bright); letter-spacing:.05em; font-weight:700; }
 .feature-cell p{ font-size:13px; line-height:2; color:#c9bfa8; margin:0; }
 @media (max-width:700px){
   .feature-grid{ grid-template-columns:1fr; }
   .feature-cell{ border-right:none !important; padding:30px 26px; }
 }
+
+/* ==================== 難易度 ==================== */
+.difficulty{ padding:110px 0 130px; background:var(--parchment-deep); }
+.difficulty .eyebrow-label{ color:var(--gold-dim); }
+.difficulty .section-title{ color:var(--ink-on-parchment); }
+.diff-row{ display:flex; gap:22px; max-width:900px; margin:64px auto 0; flex-wrap:wrap; justify-content:center; }
+.diff-card{
+  flex:1 1 240px; max-width:280px; background:#fffdf6; border-radius:16px; padding:30px 26px;
+  border-top:4px solid var(--gold); box-shadow:0 10px 24px rgba(36,26,53,0.08);
+  opacity:0; transform:translateY(20px);
+  transition:opacity .7s ease, transform .7s ease, box-shadow .3s ease;
+}
+.diff-card:hover{ transform:translateY(-6px); box-shadow:0 18px 34px rgba(36,26,53,0.14); transition:transform .3s ease, box-shadow .3s ease; }
+.reveal.in-view .diff-card{ opacity:1; transform:translateY(0); }
+.reveal.in-view .diff-card:nth-child(1){ transition-delay:0s; }
+.reveal.in-view .diff-card:nth-child(2){ transition-delay:.14s; }
+.reveal.in-view .diff-card:nth-child(3){ transition-delay:.28s; }
+.diff-card:nth-child(2){ border-top-color:var(--sapphire); }
+.diff-card:nth-child(3){ border-top-color:var(--wine); }
+.diff-tag{
+  display:inline-block; font-family:var(--font-ui); font-size:10px; letter-spacing:.1em;
+  padding:3px 12px; border-radius:999px; margin-bottom:16px; color:#fff;
+}
+.diff-card:nth-child(1) .diff-tag{ background:var(--gold-dim); }
+.diff-card:nth-child(2) .diff-tag{ background:var(--sapphire); }
+.diff-card:nth-child(3) .diff-tag{ background:var(--wine); }
+.diff-card h3{ font-size:17px; margin:0 0 12px; color:var(--ink-on-parchment); }
+.diff-card p{ font-size:13px; line-height:1.95; color:var(--ink-on-parchment-dim); margin:0; }
 
 /* ==================== 最終CTA ==================== */
 .cta{
@@ -350,6 +460,7 @@ noscript .reveal, .no-js .reveal{ opacity:1 !important; }
 </head>
 <body>
 
+<div class="scroll-progress" id="scroll-progress"></div>
 <nav class="nav" id="nav">
   <a href="#top" class="nav-logo">MASQUERADE</a>
   <ul class="nav-links">
@@ -374,7 +485,31 @@ noscript .reveal, .no-js .reveal{ opacity:1 !important; }
     <div class="hero-scroll">SCROLL</div>
   </section>
 
+  <section class="stats-bar reveal">
+    <div class="wrap">
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-num" data-count="10">0</div>
+          <div class="stat-label">種の仮面</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-count="3">0</div>
+          <div class="stat-label">段階の難易度</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">1<span style="font-size:.55em;">対</span>1</div>
+          <div class="stat-label">オンライン対戦</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-count="1">0</div>
+          <div class="stat-label">枚だけの手札</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="story reveal" id="story">
+    <div class="drift-layer"></div>
     <div class="wrap">
       <p class="eyebrow-label">STORY</p>
       <h2 class="section-title">仮面領、王位継承の一夜</h2>
@@ -429,7 +564,33 @@ noscript .reveal, .no-js .reveal{ opacity:1 !important; }
     </div>
   </section>
 
+  <section class="difficulty reveal">
+    <div class="wrap">
+      <p class="eyebrow-label">DIFFICULTY</p>
+      <h2 class="section-title">仮面卿の格を選ぶ</h2>
+      <div class="gold-rule"></div>
+      <div class="diff-row">
+        <div class="diff-card">
+          <span class="diff-tag">易しい</span>
+          <h3>新米仮面卿</h3>
+          <p>駆け引きに不慣れで、隙が多い。まずはここから舞踏会の空気に慣れよう。</p>
+        </div>
+        <div class="diff-card">
+          <span class="diff-tag">標準</span>
+          <h3>仮面卿</h3>
+          <p>標準的な駆け引きをこなす、舞踏会の顔。読み合いの基本を鍛えるならここ。</p>
+        </div>
+        <div class="diff-card">
+          <span class="diff-tag">難しい</span>
+          <h3>老獪な仮面卿</h3>
+          <p>捨て札から数字を読み、時に守りに徹する。手強い、百戦錬磨の相手。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="features reveal" id="features">
+    <div class="drift-layer"></div>
     <div class="wrap">
       <p class="eyebrow-label">HOW TO PLAY WITH OTHERS</p>
       <h2 class="section-title">対戦形式</h2>
@@ -460,6 +621,7 @@ noscript .reveal, .no-js .reveal{ opacity:1 !important; }
   </section>
 
   <section class="screens reveal" id="screens">
+    <div class="drift-layer"></div>
     <div class="wrap">
       <p class="eyebrow-label">SCREENS</p>
       <h2 class="section-title">舞踏会の情景</h2>
@@ -482,6 +644,7 @@ noscript .reveal, .no-js .reveal{ opacity:1 !important; }
   </section>
 
   <section class="cta reveal" id="cta">
+    <div class="drift-layer"></div>
     <p class="eyebrow-label">JOIN THE MASQUERADE</p>
     <h2 class="cta-title">今宵、仮面を被って。</h2>
     <p class="cta-sub">正体を隠し、最後まで残るか。最も高貴な仮面を手にするか。<br>舞踏会は、あなたを待っている。</p>
@@ -538,13 +701,36 @@ noscript .reveal, .no-js .reveal{ opacity:1 !important; }
       if(e.key === 'Enter' || e.key === ' ') toggle(e);
     });
   });
+
+  // 仮面カードに、マウスの位置に追従するごく控えめな3D傾き効果を加える
+  if(window.matchMedia('(hover: hover)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    grid.querySelectorAll('.mask-tile').forEach(tile => {
+      tile.addEventListener('mousemove', (e) => {
+        const rect = tile.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width - 0.5;
+        const py = (e.clientY - rect.top) / rect.height - 0.5;
+        tile.style.setProperty('--rx', `${px * 14}deg`);
+        tile.style.setProperty('--ry', `${-py * 14}deg`);
+        tile.style.setProperty('--tilt-scale', '1.03');
+      });
+      tile.addEventListener('mouseleave', () => {
+        tile.style.setProperty('--rx', '0deg');
+        tile.style.setProperty('--ry', '0deg');
+        tile.style.setProperty('--tilt-scale', '1');
+      });
+    });
+  }
 </script>
 
 <script>
-  // ナビゲーションバー：スクロールしたら背景を付ける
+  // ナビゲーションバー：スクロールしたら背景を付ける／ページ全体の読了度を進捗バーに反映する
   const nav = document.getElementById('nav');
+  const progressBar = document.getElementById('scroll-progress');
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 40);
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
+    if(progressBar) progressBar.style.width = pct + '%';
   }, { passive:true });
 
   // スクロールで各セクションが現れる演出（IntersectionObserver非対応の環境では、即座にすべて表示する）
@@ -561,6 +747,70 @@ noscript .reveal, .no-js .reveal{ opacity:1 !important; }
     revealEls.forEach(el => io.observe(el));
   } else {
     revealEls.forEach(el => el.classList.add('in-view'));
+  }
+
+  // 漂う金の粒子を、暗いセクションのdrift-layerに生成する
+  document.querySelectorAll('.drift-layer').forEach(layer => {
+    const n = 14;
+    let html = '';
+    for(let i=0;i<n;i++){
+      const left = (Math.random()*100).toFixed(1);
+      const bottom = (Math.random()*100).toFixed(1);
+      const duration = (7 + Math.random()*8).toFixed(1);
+      const delay = (Math.random()*10).toFixed(1);
+      const dx = (Math.random()*40 - 20).toFixed(0);
+      html += `<span class="drift-dot" style="left:${left}%; bottom:${bottom}%; --dx:${dx}px; animation-duration:${duration}s; animation-delay:-${delay}s;"></span>`;
+    }
+    layer.innerHTML = html;
+  });
+
+  // 統計バーの数字を、視界に入ったタイミングでカウントアップする
+  const countEls = document.querySelectorAll('.stat-num[data-count]');
+  if(countEls.length && 'IntersectionObserver' in window){
+    const countIo = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = parseInt(el.dataset.count, 10);
+        const duration = 1100;
+        const start = performance.now();
+        const step = (now) => {
+          const p = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(target * eased);
+          if(p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+        countIo.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    countEls.forEach(el => countIo.observe(el));
+  } else {
+    countEls.forEach(el => { el.textContent = el.dataset.count; });
+  }
+
+  // ナビゲーション：現在表示中のセクションに応じて、リンクをハイライトする
+  const navLinks = document.querySelectorAll('.nav-links a');
+  const navSections = Array.from(navLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  if(navSections.length && 'IntersectionObserver' in window){
+    const navIo = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const link = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+        if(link) link.classList.toggle('active', entry.isIntersecting);
+      });
+    }, { rootMargin: '-45% 0px -45% 0px' });
+    navSections.forEach(sec => navIo.observe(sec));
+  }
+
+  // ヒーロー背景に、ごく控えめな視差（パララックス）効果を加える
+  const heroEl = document.querySelector('.hero');
+  if(heroEl && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      if(y < window.innerHeight * 1.2){
+        heroEl.style.backgroundPosition = `center ${25 + y * 0.04}%`;
+      }
+    }, { passive:true });
   }
 </script>
 </body>
