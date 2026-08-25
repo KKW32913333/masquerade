@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MASQUERADE ― 仮面領の一夜｜正体を隠す、心理戦カードゲーム</title>
+<meta name="description" content="正体を隠したまま王位継承を競う、一夜限りの仮面舞踏会カードゲーム「MASQUERADE 仮面領の一夜」。10種の仮面、CPU対戦・オンライン対戦に対応。">
+<link rel="icon" href="./assets/icon-512.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ==== カラートークン ==== */
+  --ink:#0d0912;
+  --plum:#1f1730;
+  --plum-mid:#2d2147;
+  --wine:#4a1942;
+  --wine-light:#7a3d6b;
+  --gold:#c9a227;
+  --gold-bright:#f0d789;
+  --gold-dim:#8a6d1a;
+  --parchment:#f6eed8;
+  --parchment-deep:#ebe0c2;
+  --ink-on-parchment:#241a35;
+  --ink-on-parchment-dim:#6b5a42;
+  --sapphire:#2c4a7c;
+
+  --font-display: 'Cormorant Garamond', serif;
+  --font-mincho: 'Shippori Mincho', serif;
+  --font-ui: 'Zen Maru Gothic', sans-serif;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; background:var(--ink); color:var(--parchment);
+  font-family:var(--font-mincho); line-height:1.9; font-size:15px;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+img{max-width:100%; display:block;}
+a{color:inherit;}
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible{
+  outline:2px solid var(--gold-bright); outline-offset:3px; border-radius:4px;
+}
+.wrap{ max-width:1120px; margin:0 auto; padding:0 24px; }
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;} }
+
+/* ==================== ナビゲーション ==================== */
+.nav{
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 32px; font-family:var(--font-ui);
+  transition:background .4s ease, padding .4s ease, box-shadow .4s ease;
+}
+.nav.scrolled{ background:rgba(13,9,18,0.88); backdrop-filter:blur(10px); padding:12px 32px; box-shadow:0 2px 20px rgba(0,0,0,0.4); }
+.nav-logo{ font-family:var(--font-display); font-style:italic; font-weight:600; font-size:19px; letter-spacing:.06em; color:var(--gold-bright); text-decoration:none; }
+.nav-links{ display:flex; gap:30px; list-style:none; margin:0; padding:0; }
+.nav-links a{ text-decoration:none; font-size:12.5px; letter-spacing:.14em; color:var(--parchment); opacity:.75; transition:opacity .2s ease; }
+.nav-links a:hover{ opacity:1; }
+.nav-cta{
+  font-family:var(--font-mincho); font-size:12.5px; letter-spacing:.16em;
+  padding:9px 22px; border-radius:999px; border:1px solid var(--gold);
+  color:var(--gold-bright); text-decoration:none; transition:background .2s ease, color .2s ease;
+}
+.nav-cta:hover{ background:var(--gold); color:var(--ink); }
+@media (max-width:760px){ .nav-links{ display:none; } .nav{ padding:14px 18px; } }
+
+/* ==================== ヒーロー ==================== */
+.hero{
+  position:relative; min-height:100vh; min-height:100dvh;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+  padding:0 24px 96px; overflow:hidden; text-align:center;
+  background-color:var(--ink);
+  background-image:
+    linear-gradient(180deg, rgba(13,9,18,0.35) 0%, rgba(13,9,18,0.15) 35%, rgba(13,9,18,0.7) 85%, var(--ink) 100%),
+    url('./assets/hero-bg.jpg');
+  background-size:cover; background-position:center 25%;
+}
+.hero-eyebrow{
+  font-family:var(--font-mincho); font-size:13px; letter-spacing:.5em; color:var(--gold-bright);
+  margin:0 0 18px; opacity:0; animation:heroFade 1s ease .3s forwards;
+}
+.hero-title{
+  font-family:var(--font-display); font-style:italic; font-weight:600;
+  font-size:clamp(52px, 11vw, 118px); line-height:.95; letter-spacing:.01em;
+  color:var(--gold-bright); margin:0;
+  text-shadow:0 0 50px rgba(240,215,137,0.5), 0 4px 30px rgba(0,0,0,0.6);
+  opacity:0; animation:heroFade 1.1s ease .5s forwards;
+}
+.hero-sub{
+  font-family:var(--font-mincho); font-size:clamp(13px,2.2vw,16px); letter-spacing:.28em; color:var(--parchment);
+  margin:20px 0 0; opacity:0; animation:heroFade 1s ease .9s forwards;
+}
+.hero-tagline{
+  max-width:480px; margin:34px auto 0; font-size:14.5px; line-height:2.1; color:#d8cdb8;
+  opacity:0; animation:heroFade 1s ease 1.15s forwards;
+}
+.hero-ctas{ display:flex; gap:16px; margin-top:40px; flex-wrap:wrap; justify-content:center;
+  opacity:0; animation:heroFade 1s ease 1.4s forwards; }
+.btn-gold{
+  font-family:var(--font-mincho); font-size:15px; letter-spacing:.3em;
+  padding:15px 34px 15px 38px; border-radius:999px; text-decoration:none; cursor:pointer;
+  background:linear-gradient(180deg, #1c1520, #0e0a12); color:var(--gold-bright);
+  border:2px solid var(--gold);
+  box-shadow:0 0 0 1px rgba(0,0,0,0.7), 0 0 0 5px rgba(201,162,39,0.14), inset 0 0 18px rgba(201,162,39,0.16), 0 10px 26px rgba(0,0,0,0.5);
+  transition:transform .3s ease, box-shadow .3s ease;
+  display:inline-block;
+}
+.btn-gold:hover{ transform:translateY(-2px); box-shadow:0 0 0 1px rgba(0,0,0,0.7), 0 0 0 7px rgba(201,162,39,0.2), inset 0 0 22px rgba(201,162,39,0.22), 0 14px 30px rgba(0,0,0,0.55); }
+.btn-ghost{
+  font-family:var(--font-mincho); font-size:14px; letter-spacing:.2em;
+  padding:15px 30px; border-radius:999px; text-decoration:none;
+  border:1px solid rgba(246,238,216,0.35); color:var(--parchment);
+  transition:border-color .3s ease, background .3s ease;
+  display:inline-block;
+}
+.btn-ghost:hover{ border-color:var(--gold-bright); background:rgba(240,215,137,0.08); }
+@keyframes heroFade{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+.hero-scroll{
+  position:absolute; bottom:28px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  font-family:var(--font-ui); font-size:10px; letter-spacing:.3em; color:rgba(246,238,216,0.55);
+  opacity:0; animation:heroFade 1s ease 2s forwards;
+}
+.hero-scroll::after{
+  content:''; width:1px; height:34px; background:linear-gradient(180deg, rgba(240,215,137,0.7), transparent);
+  animation:scrollLine 2.2s ease-in-out infinite;
+}
+@keyframes scrollLine{ 0%{ transform:scaleY(0); transform-origin:top; } 50%{ transform:scaleY(1); transform-origin:top; } 50.01%{ transform-origin:bottom; } 100%{ transform:scaleY(0); transform-origin:bottom; } }
+
+/* ==================== セクション共通 ==================== */
+section{ position:relative; }
+.section-dark{ background:var(--ink); padding:120px 0; }
+.eyebrow-label{
+  font-family:var(--font-ui); font-size:11px; letter-spacing:.4em; color:var(--gold);
+  text-align:center; margin:0 0 18px; opacity:0; transform:translateY(14px);
+  transition:opacity .8s ease, transform .8s ease;
+}
+.section-title{
+  font-family:var(--font-mincho); font-weight:800; font-size:clamp(26px,4vw,36px);
+  text-align:center; margin:0 0 8px; letter-spacing:.06em;
+  opacity:0; transform:translateY(14px); transition:opacity .8s ease .1s, transform .8s ease .1s;
+}
+.section-title-en{
+  display:block; font-family:var(--font-display); font-style:italic; font-weight:500;
+  font-size:14px; letter-spacing:.2em; margin-top:6px; opacity:.5;
+}
+.reveal.in-view .eyebrow-label,
+.reveal.in-view .section-title{ opacity:1; transform:translateY(0); }
+.gold-rule{
+  width:64px; height:1px; margin:28px auto; background:linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+/* ==================== 世界観 ==================== */
+.story{
+  padding:130px 0; text-align:center;
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(74,25,66,0.35), transparent 65%),
+    linear-gradient(180deg, var(--ink) 0%, var(--plum) 50%, var(--ink) 100%);
+}
+.story-body{
+  max-width:640px; margin:0 auto; font-size:16.5px; line-height:2.3; color:#e5dcc6;
+  opacity:0; transform:translateY(14px); transition:opacity .9s ease .2s, transform .9s ease .2s;
+}
+.reveal.in-view .story-body{ opacity:1; transform:translateY(0); }
+.story-body b{ color:var(--gold-bright); font-weight:700; }
+
+/* ==================== 遊び方 ==================== */
+.howto{ padding:130px 0 140px; background:var(--ink); }
+.howto-grid{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:44px; margin-top:72px;
+  max-width:980px; margin-left:auto; margin-right:auto;
+}
+.howto-step{
+  text-align:center; opacity:0; transform:translateY(24px);
+  transition:opacity .8s ease, transform .8s ease;
+}
+.reveal.in-view .howto-step:nth-child(1){ transition-delay:.05s; }
+.reveal.in-view .howto-step:nth-child(2){ transition-delay:.2s; }
+.reveal.in-view .howto-step:nth-child(3){ transition-delay:.35s; }
+.reveal.in-view .howto-step{ opacity:1; transform:translateY(0); }
+.howto-num{
+  font-family:var(--font-display); font-style:italic; font-weight:600; font-size:52px;
+  color:transparent; -webkit-text-stroke:1.5px var(--gold); line-height:1; margin-bottom:18px;
+}
+.howto-step h3{ font-size:17px; margin:0 0 12px; letter-spacing:.08em; color:var(--gold-bright); font-weight:700; }
+.howto-step p{ font-size:13.5px; line-height:2; color:#c9bfa8; margin:0; }
+.howto-divider{ display:none; }
+.howto-rule-box{
+  max-width:640px; margin:80px auto 0; padding:32px 36px; border-radius:16px;
+  background:linear-gradient(160deg, rgba(201,162,39,0.07), rgba(201,162,39,0.02));
+  border:1px solid rgba(201,162,39,0.25); text-align:center;
+  opacity:0; transform:translateY(20px); transition:opacity .8s ease .5s, transform .8s ease .5s;
+}
+.reveal.in-view .howto-rule-box{ opacity:1; transform:translateY(0); }
+.howto-rule-box p{ margin:0; font-size:14.5px; line-height:2.1; color:#e5dcc6; }
+.howto-rule-box b{ color:var(--gold-bright); }
+@media (max-width:760px){
+  .howto-grid{ grid-template-columns:1fr; gap:56px; }
+  .howto-rule-box{ padding:26px 22px; }
+}
+
+/* ==================== 仮面一覧（シグネチャーセクション） ==================== */
+.masks{
+  padding:130px 0 140px; background:var(--parchment); color:var(--ink-on-parchment);
+  background-image:
+    radial-gradient(ellipse 70% 40% at 15% 0%, rgba(74,25,66,0.06), transparent 60%),
+    radial-gradient(ellipse 70% 40% at 85% 100%, rgba(44,74,124,0.06), transparent 60%);
+}
+.masks .eyebrow-label{ color:var(--gold-dim); }
+.masks .section-title{ color:var(--ink-on-parchment); }
+.masks-intro{
+  max-width:520px; margin:0 auto; text-align:center; font-size:14px; line-height:2.1; color:var(--ink-on-parchment-dim);
+  opacity:0; transform:translateY(14px); transition:opacity .8s ease .15s, transform .8s ease .15s;
+}
+.reveal.in-view .masks-intro{ opacity:1; transform:translateY(0); }
+.masks-hint{
+  text-align:center; font-family:var(--font-ui); font-size:11px; letter-spacing:.14em; color:var(--gold-dim);
+  margin:14px 0 0; opacity:.8;
+}
+.mask-grid{
+  display:grid; grid-template-columns:repeat(5, 1fr); gap:22px;
+  max-width:1080px; margin:64px auto 0;
+}
+.mask-tile{
+  position:relative; border-radius:14px; overflow:hidden; cursor:pointer;
+  aspect-ratio:302/505; background:#0d0912;
+  box-shadow:0 10px 26px rgba(36,26,53,0.18), 0 2px 6px rgba(36,26,53,0.12);
+  opacity:0; transform:translateY(26px);
+  transition:opacity .7s ease, transform .7s ease, box-shadow .3s ease;
+}
+.mask-tile:hover{ box-shadow:0 16px 36px rgba(36,26,53,0.28), 0 4px 10px rgba(36,26,53,0.18); }
+.reveal.in-view .mask-tile{ opacity:1; transform:translateY(0); }
+.mask-tile img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
+.mask-tile:hover img{ transform:scale(1.05); }
+.mask-tile-scrim{
+  position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(13,9,18,0.92) 100%);
+  pointer-events:none;
+}
+.mask-tile-count{
+  position:absolute; top:9px; right:9px; font-family:var(--font-ui); font-size:9.5px; letter-spacing:.05em;
+  color:var(--gold-bright); background:rgba(13,9,18,0.55); border:1px solid rgba(240,215,137,0.4);
+  border-radius:999px; padding:2px 8px;
+}
+.mask-tile-foot{
+  position:absolute; left:0; right:0; bottom:0; padding:12px 12px 13px; text-align:center;
+}
+.mask-tile-name{ font-size:14px; font-weight:700; color:#fff; letter-spacing:.06em; margin:0; }
+.mask-tile-yomi{ font-size:9.5px; color:rgba(255,255,255,0.6); letter-spacing:.1em; margin:2px 0 0; }
+.mask-tile-panel{
+  position:absolute; inset:0; padding:18px 16px; display:flex; flex-direction:column; justify-content:flex-end;
+  background:linear-gradient(175deg, rgba(74,25,66,0.97), rgba(13,9,18,0.98));
+  transform:translateY(100%); transition:transform .45s cubic-bezier(.2,.8,.3,1);
+}
+.mask-tile.revealed .mask-tile-panel{ transform:translateY(0); }
+.mask-tile-ability{
+  display:inline-block; font-family:var(--font-ui); font-size:10.5px; letter-spacing:.1em;
+  color:var(--ink); background:var(--gold-bright); border-radius:999px; padding:3px 12px; margin-bottom:10px; align-self:flex-start;
+}
+.mask-tile-panel .mask-tile-name{ color:var(--gold-bright); font-size:15px; }
+.mask-tile-desc{ font-size:11.5px; line-height:1.85; color:#e9e0f0; margin:8px 0 0; }
+.mask-tile-close{
+  position:absolute; top:10px; right:10px; width:22px; height:22px; border-radius:50%;
+  background:rgba(255,255,255,0.12); color:#fff; font-size:12px; display:flex; align-items:center; justify-content:center;
+}
+.mask-tile.rare .mask-tile-count{ background:var(--gold); color:var(--ink); border-color:var(--gold); font-weight:700; }
+@media (max-width:900px){ .mask-grid{ grid-template-columns:repeat(3, 1fr); gap:16px; } }
+@media (max-width:560px){ .mask-grid{ grid-template-columns:repeat(2, 1fr); gap:14px; } .masks{ padding:96px 0 110px; } }
+
+/* ==================== 対戦形式・機能 ==================== */
+.features{
+  padding:130px 0; background:linear-gradient(180deg, var(--ink) 0%, var(--plum) 100%);
+}
+.feature-grid{
+  display:grid; grid-template-columns:repeat(2, 1fr); gap:2px; margin-top:72px;
+  max-width:920px; margin-left:auto; margin-right:auto;
+  border:1px solid rgba(201,162,39,0.18); border-radius:18px; overflow:hidden;
+}
+.feature-cell{
+  padding:38px 40px; background:rgba(255,255,255,0.02);
+  border-right:1px solid rgba(201,162,39,0.14); border-bottom:1px solid rgba(201,162,39,0.14);
+  opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease;
+}
+.reveal.in-view .feature-cell{ opacity:1; transform:translateY(0); }
+.reveal.in-view .feature-cell:nth-child(1){ transition-delay:.05s; }
+.reveal.in-view .feature-cell:nth-child(2){ transition-delay:.12s; }
+.reveal.in-view .feature-cell:nth-child(3){ transition-delay:.19s; }
+.reveal.in-view .feature-cell:nth-child(4){ transition-delay:.26s; }
+.feature-cell:nth-child(2n){ border-right:none; }
+.feature-icon{ font-size:22px; margin-bottom:16px; opacity:.9; }
+.feature-cell h3{ font-size:16.5px; margin:0 0 10px; color:var(--gold-bright); letter-spacing:.05em; font-weight:700; }
+.feature-cell p{ font-size:13px; line-height:2; color:#c9bfa8; margin:0; }
+@media (max-width:700px){
+  .feature-grid{ grid-template-columns:1fr; }
+  .feature-cell{ border-right:none !important; padding:30px 26px; }
+}
+
+/* ==================== 最終CTA ==================== */
+.cta{
+  position:relative; padding:150px 24px; text-align:center; overflow:hidden;
+  background:
+    radial-gradient(ellipse 60% 70% at 50% 30%, rgba(201,162,39,0.14), transparent 70%),
+    var(--ink);
+}
+.cta-title{
+  font-family:var(--font-display); font-style:italic; font-weight:600;
+  font-size:clamp(34px,6vw,56px); color:var(--gold-bright); margin:0 0 20px;
+  text-shadow:0 0 40px rgba(240,215,137,0.35);
+  opacity:0; transform:translateY(16px); transition:opacity .8s ease, transform .8s ease;
+}
+.reveal.in-view .cta-title{ opacity:1; transform:translateY(0); }
+.cta-sub{
+  font-size:14.5px; color:#c9bfa8; max-width:420px; margin:0 auto 40px; line-height:2.1;
+  opacity:0; transform:translateY(16px); transition:opacity .8s ease .1s, transform .8s ease .1s;
+}
+.reveal.in-view .cta-sub{ opacity:1; transform:translateY(0); }
+.cta-btn-wrap{ opacity:0; transform:translateY(16px); transition:opacity .8s ease .2s, transform .8s ease .2s; }
+.reveal.in-view .cta-btn-wrap{ opacity:1; transform:translateY(0); }
+
+/* ==================== スクリーンショット ==================== */
+.screens{ padding:130px 0 140px; background:linear-gradient(180deg, var(--plum) 0%, var(--ink) 100%); overflow:hidden; }
+.screens-row{ display:flex; gap:32px; justify-content:center; margin-top:72px; flex-wrap:wrap; align-items:center; }
+.phone-frame{
+  width:220px; border-radius:28px; padding:10px; background:linear-gradient(160deg, #2a2033, #17111f);
+  border:1px solid rgba(201,162,39,0.3); box-shadow:0 20px 50px rgba(0,0,0,0.5);
+  opacity:0; transform:translateY(30px); transition:opacity .8s ease, transform .8s ease;
+}
+.reveal.in-view .phone-frame{ opacity:1; transform:translateY(0); }
+.reveal.in-view .phone-frame:nth-child(1){ transition-delay:.05s; }
+.reveal.in-view .phone-frame:nth-child(2){ transition-delay:.18s; }
+.reveal.in-view .phone-frame:nth-child(3){ transition-delay:.31s; }
+.phone-frame.mid{ margin-top:-24px; }
+.phone-frame img{ border-radius:18px; width:100%; }
+.phone-caption{ text-align:center; font-size:12px; color:#a89a7c; margin-top:16px; letter-spacing:.06em; }
+@media (max-width:760px){ .phone-frame.mid{ margin-top:0; } .phone-frame{ width:44vw; max-width:220px; } }
+
+/* ==================== フッター ==================== */
+footer{ padding:44px 24px; text-align:center; background:var(--ink); border-top:1px solid rgba(201,162,39,0.14); }
+.footer-logo{ font-family:var(--font-display); font-style:italic; font-weight:600; font-size:16px; color:var(--gold-bright); }
+footer p{ font-size:11px; color:#7a7268; letter-spacing:.06em; margin:10px 0 0; }
+/* JavaScriptが動作しない環境でも内容が必ず見えるようにする保険 */
+noscript .reveal, .no-js .reveal{ opacity:1 !important; }
+</style>
+<noscript><style>
+  .reveal .eyebrow-label, .reveal .section-title, .reveal .story-body, .reveal .howto-step,
+  .reveal .howto-rule-box, .reveal .masks-intro, .reveal .mask-tile, .reveal .feature-cell,
+  .reveal .phone-frame, .reveal .cta-title, .reveal .cta-sub, .reveal .cta-btn-wrap
+  { opacity:1 !important; transform:none !important; }
+</style></noscript>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <a href="#top" class="nav-logo">MASQUERADE</a>
+  <ul class="nav-links">
+    <li><a href="#story">世界観</a></li>
+    <li><a href="#howto">遊び方</a></li>
+    <li><a href="#masks">仮面一覧</a></li>
+    <li><a href="#features">対戦形式</a></li>
+  </ul>
+  <a href="#cta" class="nav-cta">舞踏会へ</a>
+</nav>
+
+<main>
+  <section class="hero" id="top">
+    <p class="hero-eyebrow">A PSYCHOLOGICAL MASQUERADE CARD GAME</p>
+    <h1 class="hero-title">MASQUERADE</h1>
+    <p class="hero-sub">仮面領の一夜</p>
+    <p class="hero-tagline">正体を隠したまま、王位継承の駆け引きが行われる一夜限りの舞踏会。<br>あなたの手札はただ1枚――今夜だけ被る、仮面。</p>
+    <div class="hero-ctas">
+      <a href="#cta" class="btn-gold">◆ 舞踏会へ ◆</a>
+      <a href="#masks" class="btn-ghost">仮面を見る</a>
+    </div>
+    <div class="hero-scroll">SCROLL</div>
+  </section>
+
+  <section class="story reveal" id="story">
+    <div class="wrap">
+      <p class="eyebrow-label">STORY</p>
+      <h2 class="section-title">仮面領、王位継承の一夜</h2>
+      <div class="gold-rule"></div>
+      <p class="story-body">
+        王家の血が途絶えたその夜、仮面領の貴族たちは古い慣わしに従い、ひとつの舞踏会に集められた。<br><br>
+        次の王位を継ぐのは、<b>最後まで仮面を守り通した者</b>――あるいは、<b>夜が明ける瞬間に最も高貴な仮面を被っていた者</b>。<br><br>
+        誰もが素顔を隠し、互いの正体を探り合う。囁き、駆け引き、そして裏切り。<br>
+        シャンデリアの灯りが揺れるたび、舞踏会の勝敗もまた揺れ動く。<br><br>
+        これは、たった一晩だけ許された、仮面たちの心理戦。
+      </p>
+    </div>
+  </section>
+
+  <section class="howto reveal" id="howto">
+    <div class="wrap">
+      <p class="eyebrow-label">HOW TO PLAY</p>
+      <h2 class="section-title">遊び方はいたって単純</h2>
+      <div class="gold-rule"></div>
+      <div class="howto-grid">
+        <div class="howto-step">
+          <div class="howto-num">01</div>
+          <h3>仮面を1枚引く</h3>
+          <p>普段の手札は1枚。<br>自分の番には山札から引き、<br>一時的に2枚になる。</p>
+        </div>
+        <div class="howto-step">
+          <div class="howto-num">02</div>
+          <h3>1枚を場に出す</h3>
+          <p>2枚のうち1枚を選んで公開。<br>出した仮面の効果が発動し、<br>時には相手を脱落させる。</p>
+        </div>
+        <div class="howto-step">
+          <div class="howto-num">03</div>
+          <h3>正体を隠し通す</h3>
+          <p>最後まで残った者、または<br>山札が尽きた時に一番大きい<br>数字を持っていた者の勝ち。</p>
+        </div>
+      </div>
+      <div class="howto-rule-box">
+        <p>仮面は全10種、数字は<b>1〜10</b>。<br>数字が大きいほど気高く、しかし持て余せば命取り――<br>どの仮面をいつ手放すかが、この舞踏会の駆け引きのすべて。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="masks reveal" id="masks">
+    <div class="wrap">
+      <p class="eyebrow-label">THE MASKS</p>
+      <h2 class="section-title">仮面一覧　全10種</h2>
+      <div class="gold-rule"></div>
+      <p class="masks-intro">数字は1〜10。同じ仮面が2枚ずつ、大公と仮面の主催者だけは1枚だけ。<br>それぞれに固有の力があり、使いどころが勝敗を分ける。</p>
+      <p class="masks-hint">タップ、またはカーソルを合わせて効果を確かめる ▾</p>
+
+      <div class="mask-grid" id="mask-grid"></div>
+    </div>
+  </section>
+
+  <section class="features reveal" id="features">
+    <div class="wrap">
+      <p class="eyebrow-label">HOW TO PLAY WITH OTHERS</p>
+      <h2 class="section-title">対戦形式</h2>
+      <div class="gold-rule"></div>
+      <div class="feature-grid">
+        <div class="feature-cell">
+          <div class="feature-icon">🎭</div>
+          <h3>CPU対戦</h3>
+          <p>新米仮面卿・仮面卿・老獪な仮面卿の3段階。老獪な仮面卿は、捨て札から数字を読み、時に守りに徹する高度な駆け引きを仕掛けてくる。</p>
+        </div>
+        <div class="feature-cell">
+          <div class="feature-icon">🕯️</div>
+          <h3>オンライン対戦</h3>
+          <p>合言葉ひとつで、離れた相手と1対1の舞踏会を。対局中は定型文で簡単な意思疎通もできる。</p>
+        </div>
+        <div class="feature-cell">
+          <div class="feature-icon">👑</div>
+          <h3>ランキング</h3>
+          <p>オンライン対戦の結果は、勝敗と連勝記録としてランキングに刻まれる。表示名を掲げ、上位を目指す。</p>
+        </div>
+        <div class="feature-cell">
+          <div class="feature-icon">🎻</div>
+          <h3>音と演出</h3>
+          <p>舞踏会に流れるオリジナル楽曲と、仮面ごとに異なる発動演出。効果の一つひとつに、専用の光と音がある。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screens reveal" id="screens">
+    <div class="wrap">
+      <p class="eyebrow-label">SCREENS</p>
+      <h2 class="section-title">舞踏会の情景</h2>
+      <div class="gold-rule"></div>
+      <div class="screens-row">
+        <div>
+          <div class="phone-frame"><img src="./assets/shot-home.jpg" alt="ホーム画面"></div>
+          <p class="phone-caption">ホーム画面</p>
+        </div>
+        <div>
+          <div class="phone-frame mid"><img src="./assets/shot-table.jpg" alt="対局画面"></div>
+          <p class="phone-caption">対局画面</p>
+        </div>
+        <div>
+          <div class="phone-frame"><img src="./assets/shot-effect.jpg" alt="効果発動演出"></div>
+          <p class="phone-caption">仮面ごとの発動演出</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta reveal" id="cta">
+    <p class="eyebrow-label">JOIN THE MASQUERADE</p>
+    <h2 class="cta-title">今宵、仮面を被って。</h2>
+    <p class="cta-sub">正体を隠し、最後まで残るか。最も高貴な仮面を手にするか。<br>舞踏会は、あなたを待っている。</p>
+    <div class="cta-btn-wrap">
+      <!-- ▼▼ 実際に公開しているゲームのURLに差し替えてください（例："https://your-domain.example.com/masque/"） ▼▼ -->
+      <a href="./game/" class="btn-gold">◆ MASQUERADEをはじめる ◆</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-logo">MASQUERADE</div>
+  <p>仮面領の一夜 ― an original masquerade deduction card game</p>
+</footer>
+
+<script>
+  const MASKS = [
+    { id:'attendant', num:1, name:'給仕', yomi:'きゅうじ', ability:'看破', count:'×2', desc:'相手の手札の数字を1つ宣言する。的中すれば相手は即座に脱落する。' },
+    { id:'musician', num:2, name:'楽団員', yomi:'がくだんいん', ability:'探知', count:'×2', desc:'対象の仮面の数字が「6以上」か「5以下」かだけを知る。正確な数字までは分からない。' },
+    { id:'fortune', num:3, name:'預言者', yomi:'よげんしゃ', ability:'暴露', count:'×2', desc:'対象の手札を選び、その正体をその場にいる全員の前で暴き立てる。' },
+    { id:'noble_lady', num:4, name:'貴婦人', yomi:'きふじん', ability:'加護', count:'×2', desc:'次の自分の番が来るまで、他人の効果を一切受けない。' },
+    { id:'spy', num:5, name:'密偵', yomi:'みってい', ability:'隠密', count:'×2', desc:'自分の山札の一番上をこっそり確認し、そのまま戻すか山札の底へ送るか選べる。' },
+    { id:'jester', num:6, name:'道化師', yomi:'どうけし', ability:'悪戯', count:'×2', desc:'自分と対象、双方の仮面を公開で捨てさせ、新しい仮面に総入れ替えする。' },
+    { id:'taster', num:7, name:'毒見役', yomi:'どくみやく', ability:'毒杯', count:'×2', desc:'対象の仮面を、誰にも見せぬまま密かに処分し、山札から新しい1枚を引かせる。' },
+    { id:'black_knight', num:8, name:'黒騎士', yomi:'くろきし', ability:'決闘', count:'×2', desc:'対象と手札の数字をこっそり比べ合い、低い方が脱落する。同数なら何も起きない。' },
+    { id:'grand_duke', num:9, name:'大公', yomi:'たいこう', ability:'封印', count:'×1', rare:true, desc:'対象の次の番を封じる。次の番、対象は仮面を引くことも場に出すこともできない。' },
+    { id:'masked_host', num:10, name:'仮面の主催者', yomi:'かめんのしゅさいしゃ', ability:'共倒れ', count:'×1', rare:true, desc:'自ら場に出すと自分は即座に脱落するが、その瞬間、対象も道連れにして退場させる。' },
+  ];
+
+  const grid = document.getElementById('mask-grid');
+  grid.innerHTML = MASKS.map((m, i) => `
+    <div class="mask-tile${m.rare ? ' rare' : ''}" data-idx="${i}" tabindex="0" role="button" aria-label="${m.name}の効果を見る">
+      <img src="./assets/cards/${m.id}.jpg" alt="${m.name}" loading="lazy">
+      <div class="mask-tile-scrim"></div>
+      <div class="mask-tile-count">${m.count}</div>
+      <div class="mask-tile-foot">
+        <p class="mask-tile-name">${m.name}</p>
+        <p class="mask-tile-yomi">${m.yomi}</p>
+      </div>
+      <div class="mask-tile-panel">
+        <button class="mask-tile-close" aria-label="閉じる">×</button>
+        <span class="mask-tile-ability">${m.ability}</span>
+        <p class="mask-tile-name">${m.name}（${m.num}）</p>
+        <p class="mask-tile-desc">${m.desc}</p>
+      </div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.mask-tile').forEach(tile => {
+    const toggle = (e) => { e.stopPropagation(); e.preventDefault(); tile.classList.toggle('revealed'); };
+    tile.addEventListener('click', toggle);
+    tile.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' ') toggle(e);
+    });
+  });
+</script>
+
+<script>
+  // ナビゲーションバー：スクロールしたら背景を付ける
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive:true });
+
+  // スクロールで各セクションが現れる演出（IntersectionObserver非対応の環境では、即座にすべて表示する）
+  const revealEls = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.18 });
+    revealEls.forEach(el => io.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('in-view'));
+  }
+</script>
+</body>
+</html>
