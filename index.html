@@ -69,6 +69,7 @@ section{ position:relative; }
 }
 .nav-cta:hover{ background:var(--gold); color:var(--ink); }
 @media (max-width:980px){ .nav-links{ display:none; } .nav{ padding:14px 18px; } }
+@media (max-width:760px){ .hero{ background-position:72% center; } }
 
 /* ==================== ヒーロー（左寄せ） ==================== */
 .hero{
@@ -77,9 +78,9 @@ section{ position:relative; }
   padding:120px 24px 80px;
   background-color:var(--ink);
   background-image:
-    linear-gradient(100deg, rgba(13,9,18,0.94) 0%, rgba(13,9,18,0.68) 42%, rgba(13,9,18,0.25) 68%, rgba(13,9,18,0.15) 100%),
-    url('./assets/hero-bg.jpg');
-  background-size:cover; background-position:68% center;
+    linear-gradient(100deg, rgba(13,9,18,0.55) 0%, rgba(13,9,18,0.35) 42%, rgba(13,9,18,0.15) 68%, rgba(13,9,18,0.05) 100%),
+    url('./assets/header-bg.jpg');
+  background-size:cover; background-position:center center;
 }
 .hero-inner{ max-width:1180px; margin:0 auto; width:100%; }
 .hero-eyebrow{ font-family:var(--font-mincho); font-size:14px; letter-spacing:.1em; color:var(--parchment); margin:0 0 14px; opacity:0; animation:heroFade 1s ease .25s forwards; }
@@ -137,26 +138,51 @@ section{ position:relative; }
 /* ==================== カード一覧 ==================== */
 .cards-section{ padding:110px 0 120px; background:var(--ink); }
 .cards-row{
-  display:grid; grid-template-columns:repeat(10, 1fr); gap:12px;
-  max-width:1180px; margin:56px auto 40px; overflow-x:auto;
+  display:grid; grid-template-columns:repeat(5, 1fr); gap:22px;
+  max-width:1080px; margin:56px auto 40px;
 }
 .card-tile{
-  position:relative; border-radius:10px; overflow:hidden; background:#0d0912;
-  aspect-ratio:302/505; box-shadow:0 8px 20px rgba(0,0,0,0.35);
-  opacity:0; transform:translateY(20px); transition:opacity .6s ease, transform .6s ease, box-shadow .3s ease;
+  position:relative; border-radius:14px; overflow:hidden; cursor:pointer;
+  aspect-ratio:302/505; background:#0d0912;
+  box-shadow:0 10px 26px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2);
+  opacity:0; transform:translateY(24px);
+  transition:opacity .7s ease, transform .7s ease, box-shadow .3s ease;
+  will-change:transform;
 }
-.card-tile:hover{ box-shadow:0 14px 30px rgba(0,0,0,0.5); transform:translateY(-4px); }
-.reveal.in-view .card-tile{ opacity:1; transform:translateY(0); }
-.card-tile img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-.card-tile-scrim{ position:absolute; inset:0; background:linear-gradient(180deg, transparent 45%, rgba(13,9,18,0.95) 100%); }
-.card-tile-num{ position:absolute; top:6px; left:7px; font-family:var(--font-display); font-style:italic; font-weight:600; font-size:15px; color:var(--gold-bright); text-shadow:0 2px 6px rgba(0,0,0,0.9); }
-.card-tile-count{ position:absolute; top:6px; right:6px; font-family:var(--font-ui); font-size:8px; color:var(--gold-bright); background:rgba(13,9,18,0.6); border:1px solid rgba(240,215,137,0.4); border-radius:999px; padding:1px 6px; }
-.card-tile-foot{ position:absolute; left:0; right:0; bottom:6px; text-align:center; padding:0 4px; }
-.card-tile-name{ font-size:11px; font-weight:700; color:#fff; margin:0; line-height:1.3; }
-.card-tile-ability{ font-size:8.5px; color:var(--gold-bright); margin:2px 0 0; letter-spacing:.04em; }
+.card-tile:hover{ box-shadow:0 20px 40px rgba(0,0,0,0.45), 0 6px 14px rgba(0,0,0,0.3); }
+.reveal.in-view .card-tile{
+  opacity:1;
+  transform:translateY(0) perspective(700px) rotateX(var(--ry, 0deg)) rotateY(var(--rx, 0deg)) scale(var(--tilt-scale, 1));
+  transition:opacity .7s ease, transform .15s ease, box-shadow .3s ease;
+}
+.card-tile img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
+.card-tile:hover img{ transform:scale(1.05); }
+.card-tile-scrim{ position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(13,9,18,0.92) 100%); pointer-events:none; }
+.card-tile-count{ position:absolute; top:9px; right:9px; font-family:var(--font-ui); font-size:9.5px; color:var(--gold-bright); background:rgba(13,9,18,0.55); border:1px solid rgba(240,215,137,0.4); border-radius:999px; padding:2px 8px; }
+.card-tile-foot{ position:absolute; left:0; right:0; bottom:0; padding:12px 12px 13px; text-align:center; }
+.card-tile-name{ font-size:14px; font-weight:700; color:#fff; letter-spacing:.06em; margin:0; }
+.card-tile-yomi{ font-size:9.5px; color:rgba(255,255,255,0.6); letter-spacing:.1em; margin:2px 0 0; }
+.card-tile-panel{
+  position:absolute; inset:0; padding:18px 16px; display:flex; flex-direction:column; justify-content:flex-end;
+  background:linear-gradient(175deg, rgba(74,25,66,0.97), rgba(13,9,18,0.98));
+  transform:translateY(100%); transition:transform .45s cubic-bezier(.2,.8,.3,1);
+}
+.card-tile.revealed .card-tile-panel{ transform:translateY(0); }
+.card-tile-ability-badge{
+  display:inline-block; font-family:var(--font-ui); font-size:10.5px; letter-spacing:.1em;
+  color:var(--ink); background:var(--gold-bright); border-radius:999px; padding:3px 12px; margin-bottom:10px; align-self:flex-start;
+}
+.card-tile-panel .card-tile-name{ color:var(--gold-bright); font-size:15px; }
+.card-tile-desc{ font-size:11.5px; line-height:1.85; color:#e9e0f0; margin:8px 0 0; }
+.card-tile-close{
+  position:absolute; top:10px; right:10px; width:22px; height:22px; border-radius:50%;
+  background:rgba(255,255,255,0.12); color:#fff; font-size:12px; display:flex; align-items:center; justify-content:center;
+}
+.card-tile.rare .card-tile-count{ background:var(--gold); color:var(--ink); border-color:var(--gold); font-weight:700; }
+.cards-hint{ text-align:center; font-family:var(--font-ui); font-size:11px; letter-spacing:.14em; color:var(--gold-dim); margin:0 0 8px; opacity:.85; }
 .cards-cta{ text-align:center; }
-@media (max-width:980px){ .cards-row{ grid-template-columns:repeat(5, 1fr); } }
-@media (max-width:560px){ .cards-row{ grid-template-columns:repeat(3, 1fr); } .card-tile-name{ font-size:9.5px; } .card-tile-ability{ font-size:7.5px; } }
+@media (max-width:900px){ .cards-row{ grid-template-columns:repeat(3, 1fr); gap:16px; } }
+@media (max-width:560px){ .cards-row{ grid-template-columns:repeat(2, 1fr); gap:14px; } }
 
 /* ==================== 対戦形式（CPU／オンライン 2カラム） ==================== */
 .battle{ padding:110px 0 120px; background:linear-gradient(180deg, var(--ink) 0%, var(--plum) 55%, var(--ink) 100%); }
@@ -251,6 +277,28 @@ section{ position:relative; }
 
 /* ==================== フッター ==================== */
 footer{ padding:32px 24px; text-align:center; background:var(--ink); border-top:1px solid rgba(201,162,39,0.14); }
+
+/* ==================== 詳細モーダル ==================== */
+.detail-overlay{
+  position:fixed; inset:0; z-index:200; background:rgba(5,4,10,0.75); backdrop-filter:blur(3px);
+  display:flex; align-items:center; justify-content:center; padding:24px;
+  opacity:0; visibility:hidden; transition:opacity .25s ease, visibility .25s ease;
+}
+.detail-overlay.open{ opacity:1; visibility:visible; }
+.detail-box{
+  background:var(--plum); border:1px solid rgba(201,162,39,0.3); border-radius:18px;
+  max-width:560px; width:100%; max-height:80vh; overflow-y:auto; padding:32px 30px;
+  box-shadow:0 30px 70px rgba(0,0,0,0.6);
+  transform:translateY(16px); transition:transform .3s ease;
+}
+.detail-overlay.open .detail-box{ transform:translateY(0); }
+.detail-box h3{ font-family:var(--font-mincho); color:var(--gold-bright); font-size:19px; margin:0 0 18px; padding-right:30px; }
+.detail-close{
+  position:absolute; top:18px; right:18px; width:30px; height:30px; border-radius:50%;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(201,162,39,0.3); color:var(--parchment);
+  font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.detail-close:hover{ background:rgba(201,162,39,0.18); }
 .footer-links{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
 .footer-links a{ text-decoration:none; font-size:11.5px; color:#a89a7c; opacity:.8; }
 .footer-links a:hover{ opacity:1; color:var(--gold-bright); }
@@ -274,7 +322,7 @@ footer .copy{ font-size:10.5px; color:#635b50; margin:0; }
     <li><a href="#screens">スクリーンショット</a></li>
     <li><a href="#faq">よくある質問</a></li>
   </ul>
-  <a href="#cta" class="nav-cta">今すぐプレイ</a>
+  <a href="./game/" class="nav-cta">今すぐプレイ</a>
 </nav>
 
 <main>
@@ -285,7 +333,7 @@ footer .copy{ font-size:10.5px; color:#635b50; margin:0; }
       <p class="hero-sub">― 仮面領の一夜 ―</p>
       <p class="hero-body">正体を隠したまま王位継承を競い合う、<br>一夜限りの仮面舞踏会。<br>あなたの一手が、運命を変える。</p>
       <div class="hero-ctas">
-        <a href="#cta" class="btn-gold">今すぐプレイ</a>
+        <a href="./game/" class="btn-gold">今すぐプレイ</a>
         <a href="#about" class="btn-outline">遊び方を見る</a>
       </div>
     </div>
@@ -327,8 +375,9 @@ footer .copy{ font-size:10.5px; color:#635b50; margin:0; }
       <p class="eyebrow-label">CARDS</p>
       <h2 class="section-title">カード一覧（全10種）</h2>
       <div class="title-flourish"><span class="fl-line"></span><span class="fl-mark">❖</span><span class="fl-line r"></span></div>
+      <p class="cards-hint">タップ、またはカーソルを合わせて効果を確かめる ▾</p>
       <div class="cards-row" id="cards-row"></div>
-      <div class="cards-cta"><a href="#battle" class="btn-outline">カード一覧の詳細を見る</a></div>
+      <div class="cards-cta"><button class="btn-outline" id="cards-detail-btn" type="button">カード一覧の詳細を見る</button></div>
     </div>
   </section>
 
@@ -349,7 +398,7 @@ footer .copy{ font-size:10.5px; color:#635b50; margin:0; }
             <div class="diff-pill"><b>仮面卿（標準）</b><span>標準的な駆け引きをこなす</span></div>
             <div class="diff-pill"><b>老獪な仮面卿</b><span>高度な読みで挑んでくる</span></div>
           </div>
-          <div class="battle-cta"><a href="#faq" class="btn-outline">CPU対戦の詳細を見る</a></div>
+          <div class="battle-cta"><button class="btn-outline" id="cpu-detail-btn" type="button">CPU対戦の詳細を見る</button></div>
         </div>
         <div class="battle-panel">
           <div class="battle-head">
@@ -363,7 +412,7 @@ footer .copy{ font-size:10.5px; color:#635b50; margin:0; }
             <div class="online-icon-item"><div class="oi">🔁</div><span>リタイア対応・再戦可能</span></div>
             <div class="online-icon-item"><div class="oi">👑</div><span>ランキング記録</span></div>
           </div>
-          <div class="battle-cta"><a href="#faq" class="btn-outline">オンライン対戦の詳細を見る</a></div>
+          <div class="battle-cta"><button class="btn-outline" id="online-detail-btn" type="button">オンライン対戦の詳細を見る</button></div>
         </div>
       </div>
     </div>
@@ -437,6 +486,14 @@ footer .copy{ font-size:10.5px; color:#635b50; margin:0; }
   </section>
 </main>
 
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-box" style="position:relative;">
+    <button class="detail-close" id="detail-close-btn" aria-label="閉じる">×</button>
+    <h3 id="detail-title"></h3>
+    <div id="detail-body"></div>
+  </div>
+</div>
+
 <footer>
   <div class="footer-links">
     <a href="#">プライバシーポリシー</a><span class="sep">|</span>
@@ -457,32 +514,137 @@ footer .copy{ font-size:10.5px; color:#635b50; margin:0; }
   }, { passive:true });
 
   const MASKS = [
-    { id:'attendant', num:1, name:'給仕', ability:'看破', count:'×2' },
-    { id:'musician', num:2, name:'楽団員', ability:'探知', count:'×2' },
-    { id:'fortune', num:3, name:'預言者', ability:'暴露', count:'×2' },
-    { id:'noble_lady', num:4, name:'貴婦人', ability:'加護', count:'×2' },
-    { id:'spy', num:5, name:'密偵', ability:'隠密', count:'×2' },
-    { id:'jester', num:6, name:'道化師', ability:'悪戯', count:'×2' },
-    { id:'taster', num:7, name:'毒見役', ability:'毒杯', count:'×2' },
-    { id:'black_knight', num:8, name:'黒騎士', ability:'決闘', count:'×2' },
-    { id:'grand_duke', num:9, name:'大公', ability:'封印', count:'×1' },
-    { id:'masked_host', num:10, name:'仮面の主催者', ability:'共倒れ', count:'×1' },
+    { id:'attendant', num:1, name:'給仕', yomi:'きゅうじ', ability:'看破', count:'×2', desc:'相手の手札の数字を1つ宣言する。的中すれば相手は即座に脱落する。' },
+    { id:'musician', num:2, name:'楽団員', yomi:'がくだんいん', ability:'探知', count:'×2', desc:'対象の仮面の数字が「6以上」か「5以下」かだけを知る。正確な数字までは分からない。' },
+    { id:'fortune', num:3, name:'預言者', yomi:'よげんしゃ', ability:'暴露', count:'×2', desc:'対象の手札を選び、その正体をその場にいる全員の前で暴き立てる。' },
+    { id:'noble_lady', num:4, name:'貴婦人', yomi:'きふじん', ability:'加護', count:'×2', desc:'次の自分の番が来るまで、他人の効果を一切受けない。' },
+    { id:'spy', num:5, name:'密偵', yomi:'みってい', ability:'隠密', count:'×2', desc:'自分の山札の一番上をこっそり確認し、そのまま戻すか山札の底へ送るか選べる。' },
+    { id:'jester', num:6, name:'道化師', yomi:'どうけし', ability:'悪戯', count:'×2', desc:'自分と対象、双方の仮面を公開で捨てさせ、新しい仮面に総入れ替えする。' },
+    { id:'taster', num:7, name:'毒見役', yomi:'どくみやく', ability:'毒杯', count:'×2', desc:'対象の仮面を、誰にも見せぬまま密かに処分し、山札から新しい1枚を引かせる。' },
+    { id:'black_knight', num:8, name:'黒騎士', yomi:'くろきし', ability:'決闘', count:'×2', desc:'対象と手札の数字をこっそり比べ合い、低い方が脱落する。同数なら何も起きない。' },
+    { id:'grand_duke', num:9, name:'大公', yomi:'たいこう', ability:'封印', count:'×1', rare:true, desc:'対象の次の番を封じる。次の番、対象は仮面を引くことも場に出すこともできない。' },
+    { id:'masked_host', num:10, name:'仮面の主催者', yomi:'かめんのしゅさいしゃ', ability:'共倒れ', count:'×1', rare:true, desc:'自ら場に出すと自分は即座に脱落するが、その瞬間、対象も道連れにして退場させる。' },
   ];
+  // 汎用の詳細モーダル：タイトルと本文（HTML）を渡して開く
+  const detailOverlay = document.getElementById('detail-overlay');
+  const detailTitle = document.getElementById('detail-title');
+  const detailBody = document.getElementById('detail-body');
+  function openDetailModal(title, bodyHtml){
+    if(!detailOverlay) return;
+    detailTitle.textContent = title;
+    detailBody.innerHTML = bodyHtml;
+    detailOverlay.classList.add('open');
+  }
+  function closeDetailModal(){ if(detailOverlay) detailOverlay.classList.remove('open'); }
+  document.getElementById('detail-close-btn')?.addEventListener('click', closeDetailModal);
+  detailOverlay?.addEventListener('click', (e) => { if(e.target === detailOverlay) closeDetailModal(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeDetailModal(); });
+
   const cardsRow = document.getElementById('cards-row');
   if(cardsRow){
-    cardsRow.innerHTML = MASKS.map(m => `
-      <div class="card-tile">
+    cardsRow.innerHTML = MASKS.map((m, i) => `
+      <div class="card-tile${m.rare ? ' rare' : ''}" data-idx="${i}" tabindex="0" role="button" aria-label="${m.name}の効果を見る">
         <img src="./assets/cards/${m.id}.jpg" alt="${m.name}" loading="lazy">
         <div class="card-tile-scrim"></div>
-        <div class="card-tile-num">${m.num}</div>
         <div class="card-tile-count">${m.count}</div>
         <div class="card-tile-foot">
           <p class="card-tile-name">${m.name}</p>
-          <p class="card-tile-ability">${m.ability}</p>
+          <p class="card-tile-yomi">${m.yomi}</p>
+        </div>
+        <div class="card-tile-panel">
+          <button class="card-tile-close" aria-label="閉じる">×</button>
+          <span class="card-tile-ability-badge">${m.ability}</span>
+          <p class="card-tile-name">${m.name}（${m.num}）</p>
+          <p class="card-tile-desc">${m.desc}</p>
         </div>
       </div>
     `).join('');
+
+    cardsRow.querySelectorAll('.card-tile').forEach(tile => {
+      const toggle = (e) => { e.stopPropagation(); e.preventDefault(); tile.classList.toggle('revealed'); };
+      tile.addEventListener('click', toggle);
+      tile.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' ') toggle(e); });
+    });
+
+    // マウス位置に応じたごく控えめな3D傾き効果（タッチ端末では無効化）
+    if(window.matchMedia('(hover: hover)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      cardsRow.querySelectorAll('.card-tile').forEach(tile => {
+        tile.addEventListener('mousemove', (e) => {
+          const rect = tile.getBoundingClientRect();
+          const px = (e.clientX - rect.left) / rect.width - 0.5;
+          const py = (e.clientY - rect.top) / rect.height - 0.5;
+          tile.style.setProperty('--rx', `${px * 14}deg`);
+          tile.style.setProperty('--ry', `${-py * 14}deg`);
+          tile.style.setProperty('--tilt-scale', '1.03');
+        });
+        tile.addEventListener('mouseleave', () => {
+          tile.style.setProperty('--rx', '0deg');
+          tile.style.setProperty('--ry', '0deg');
+          tile.style.setProperty('--tilt-scale', '1');
+        });
+      });
+    }
   }
+
+  // 「カード一覧の詳細を見る」：全10種の効果をまとめて確認できるモーダルを開く
+  const cardsDetailBtn = document.getElementById('cards-detail-btn');
+  if(cardsDetailBtn){
+    cardsDetailBtn.addEventListener('click', () => {
+      openDetailModal('全10種の仮面と効果', MASKS.map(m =>
+        `<div style="display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:1px solid rgba(201,162,39,0.14);">
+          <img src="./assets/cards/${m.id}.jpg" alt="${m.name}" style="width:44px; border-radius:6px; flex:0 0 auto;">
+          <div>
+            <b style="color:var(--gold-bright); font-size:14px;">${m.num}. ${m.name}（${m.yomi}） <span style="color:var(--parchment); font-weight:400; font-size:11.5px;">${m.ability} ${m.count}</span></b>
+            <p style="margin:4px 0 0; font-size:12.5px; color:#c9bfa8; line-height:1.8;">${m.desc}</p>
+          </div>
+        </div>`
+      ).join(''));
+    });
+  }
+
+  // 「CPU対戦の詳細を見る」「オンライン対戦の詳細を見る」
+  document.getElementById('cpu-detail-btn')?.addEventListener('click', () => {
+    openDetailModal('CPU対戦について', `
+      <p style="font-size:13px; line-height:2; color:#c9bfa8; margin:0 0 18px;">3段階の難易度から選んで、仮面卿たちに挑戦できます。難易度ごとの対戦成績は端末内に保存され、いつでも確認・リセットできます。</p>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(201,162,39,0.16); border-radius:12px; padding:14px 16px;">
+          <b style="color:var(--gold-bright); font-size:13px;">新米仮面卿</b>
+          <p style="margin:4px 0 0; font-size:12px; color:#a89a7c;">駆け引きに不慣れで、隙が多い。はじめての方におすすめです。</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(201,162,39,0.16); border-radius:12px; padding:14px 16px;">
+          <b style="color:var(--gold-bright); font-size:13px;">仮面卿（標準）</b>
+          <p style="margin:4px 0 0; font-size:12px; color:#a89a7c;">標準的な駆け引きをこなす、舞踏会の顔。読み合いの基本を鍛えるのに最適です。</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(201,162,39,0.16); border-radius:12px; padding:14px 16px;">
+          <b style="color:var(--gold-bright); font-size:13px;">老獪な仮面卿</b>
+          <p style="margin:4px 0 0; font-size:12px; color:#a89a7c;">捨て札から数字を読み、時に守りに徹する高度な読みで挑んでくる、手強い相手です。</p>
+        </div>
+      </div>
+    `);
+  });
+  document.getElementById('online-detail-btn')?.addEventListener('click', () => {
+    openDetailModal('オンライン対戦について', `
+      <p style="font-size:13px; line-height:2; color:#c9bfa8; margin:0 0 18px;">合言葉（5文字のコード）を相手に伝えるだけで、無料で1対1のオンライン対戦を楽しめます。</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(201,162,39,0.16); border-radius:12px; padding:14px 12px; text-align:center;">
+          <div style="font-size:16px; margin-bottom:6px;">💬</div>
+          <span style="font-size:11.5px; color:#c9bfa8;">定型文で会話（8種類）</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(201,162,39,0.16); border-radius:12px; padding:14px 12px; text-align:center;">
+          <div style="font-size:16px; margin-bottom:6px;">🛡️</div>
+          <span style="font-size:11.5px; color:#c9bfa8;">接続切れ保護機能</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(201,162,39,0.16); border-radius:12px; padding:14px 12px; text-align:center;">
+          <div style="font-size:16px; margin-bottom:6px;">🔁</div>
+          <span style="font-size:11.5px; color:#c9bfa8;">リタイア対応・再戦可能</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(201,162,39,0.16); border-radius:12px; padding:14px 12px; text-align:center;">
+          <div style="font-size:16px; margin-bottom:6px;">👑</div>
+          <span style="font-size:11.5px; color:#c9bfa8;">ランキング記録</span>
+        </div>
+      </div>
+    `);
+  });
 
   const FAQS = [
     { q:'ルールを覚えるのは難しいですか？', a:'基本の手札は常に1枚、自分の番には1枚引いて1枚出すだけです。数分でルールを覚えられ、奥深い駆け引きを楽しめます。' },
