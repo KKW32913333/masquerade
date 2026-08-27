@@ -317,12 +317,24 @@ footer .copy{ font-size:10.5px; color:#635b50; margin:0; }
 @media (max-width:760px){
   .hero{
     background-position:72% center;
+    /* 以前は文字の後ろ全体をかなり暗くしていたが、画像そのものが暗く見えすぎるとの
+       ご意見を受け、暗さを全体的に抑えた。文字の読みやすさは、控えめな影（text-shadow）
+       と、文字のすぐ後ろだけを狙った短いグラデーションで補っている。 */
     background-image:
-      linear-gradient(180deg, rgba(13,9,18,0.5) 0%, rgba(13,9,18,0.55) 30%, rgba(13,9,18,0.88) 62%, rgba(13,9,18,0.96) 100%),
+      linear-gradient(180deg, rgba(13,9,18,0.28) 0%, rgba(13,9,18,0.22) 22%, rgba(13,9,18,0.5) 48%, rgba(13,9,18,0.72) 100%),
       url('./assets/header-bg.jpg');
-    padding-top:100px; padding-bottom:56px; align-items:flex-end;
+    /* 文字が画面の下端に寄りすぎていたため、少し上寄りの落ち着いた位置に戻す */
+    padding-top:0; padding-bottom:64px; align-items:center;
   }
-  .hero-eyebrow, .hero-title, .hero-sub, .hero-body{ text-shadow:0 2px 10px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.9); }
+  .hero-eyebrow, .hero-title, .hero-sub, .hero-body{ text-shadow:0 2px 12px rgba(0,0,0,0.85), 0 1px 4px rgba(0,0,0,0.95); }
+  /* 画面の縦幅によっては、この付近が仮面の明るい部分と重なることがある。
+     枠線だけの「遊び方を見る」ボタンは背景が透明なため、その場合に文字が読みづらくなってしまう。
+     背景の内容に関わらず必ず読めるよう、控えめな暗い背景を持たせておく。 */
+  .btn-outline{ background:rgba(13,9,18,0.72); backdrop-filter:blur(3px); border-color:rgba(246,238,216,0.55); }
+  .hero-body{
+    display:inline-block; background:rgba(13,9,18,0.38); border-radius:10px;
+    padding:10px 14px; margin-left:-14px;
+  }
 }
 </style>
 </head>
